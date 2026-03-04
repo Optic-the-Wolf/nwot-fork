@@ -98,6 +98,7 @@ var fontTemplate           = "$px 'Courier New', monospace";
 var specialFontTemplate    = "$px consolas, monospace";
 var fontOrder              = ["Courier New", "monospace"];
 var specialFontOrder       = ["consolas", "monospace"];
+var fontSize               = 16;
 var initiallyFetched       = false;
 var lastLinkHover          = null; // [tileX, tileY, charX, charY]
 var lastTileHover          = null; // [type, tileX, tileY, (charX, charY)]
@@ -746,10 +747,8 @@ function updateScaleConsts() {
 	tileWidth = Math.ceil(tileW);
 	tileHeight = Math.ceil(tileH);
 
-	var fontSize = normFontSize(16 * zoom);
-
-	font = fontTemplate.replace("$", fontSize);
-	specialCharFont = specialFontTemplate.replace("$", fontSize);
+	font = fontTemplate.replace("$", normFontSize(fontSize * zoom));
+	specialCharFont = specialFontTemplate.replace("$", normFontSize(16 * zoom));
 
 	textRenderCanvas.width = tileWidth + 5;
 	textRenderCanvas.height = tileHeight + 5;
@@ -3978,7 +3977,7 @@ function event_wheel(e) {
 	if(!scrollingEnabled) return; // return if disabled
 	if(!viewportSufficient()) return;
 	// if not focused on canvas, don't scroll world
-	if(!closest(e.target, elm.main_view)) return;
+	if(!closest(e.target, elm.main_view) && !closest(e.target, elm.link_div)) return;
 	if(e.ctrlKey) return; // don't scroll if ctrl is down (zooming)
 	var deltaX = Math.trunc(e.deltaX);
 	var deltaY = Math.trunc(e.deltaY);
@@ -3997,6 +3996,7 @@ function event_wheel(e) {
 		deltaY: -deltaY
 	});
 	w.render();
+	e.preventDefault();
 }
 
 function event_wheel_zoom(e) {
@@ -7094,7 +7094,7 @@ function setupDOMEvents() {
 	document.addEventListener("touchend", event_touchend);
 	document.addEventListener("touchmove", event_touchmove, { passive: false });
 	document.addEventListener("wheel", event_wheel_zoom, { passive: false });
-	document.addEventListener("wheel", event_wheel);
+	document.addEventListener("wheel", event_wheel, { passive: false });
 	document.addEventListener("mousemove", event_mousemove);
 	document.addEventListener("keydown", event_keydown);
 	document.addEventListener("keyup", event_keyup);
